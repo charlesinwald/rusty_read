@@ -6,6 +6,7 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use std::io;
+use std::path::{Path, PathBuf};
 // `tui` is a library for building Text User Interfaces (TUIs)
 use tui::{
     backend::CrosstermBackend, // Connects `tui` with `crossterm` for terminal backend operations.
@@ -46,10 +47,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut terminal = Terminal::new(backend)?;
 
     let path = ".";
-    let mut files = list_directory_contents(path);
-    let mut selected = 0;
     let initial_path = String::from(".");
     let mut current_path = initial_path.clone();
+    let mut files = list_directory_contents(path);
+    let mut selected = 0;
+
 
     loop {
         terminal.draw(|f| {
@@ -58,6 +60,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .margin(2)
                 .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
                 .split(f.size());
+
+                // Use the current directory name or the initial path as the title
+                let current_dir_name = Path::new(&current_path)
+                    .file_name()
+                    .map(|name| name.to_string_lossy().into_owned())
+                    .unwrap_or_else(|| {
+                        Path::new(&current_path)
+                            .components()
+                            .last()
+                            .map(|c| c.as_os_str().to_string_lossy().into_owned())
+                            .unwrap_or_else(|| "Directory".into())
+                    });
 
                 let items: Vec<ListItem> = files
                     .iter()
@@ -82,7 +96,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .collect();
 
             let files_list =
-                List::new(items).block(Block::default().borders(Borders::ALL).title("Files"));
+                List::new(items).block(Block::default().borders(Borders::ALL).title(current_dir_name));
             f.render_widget(files_list, chunks[0]);
         })?;
 
@@ -109,7 +123,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         files = list_directory_contents(&current_path);
                         selected = 0; // Reset selection in the new directory
                     }
-                }                
+                }
+                KeyCode::Backspace => {
+                    // Use Path and PathBuf to manipulate paths
+                    if let Some(parent_path) = Path::new(&current_path).parent() {
+                        // Check if the parent exists and is not the current directory itself to prevent infinite loops
+                        if parent_path != Path::new(&current_path) {
+                            // Convert the parent path to a String
+                            current_path = parent_path.to_path_buf().to_string_lossy().into_owned();
+                        } else {
+                            // TODO: Handle the scenario where you can't go up any further, maybe reset to initial_path or do nothing
+                            // current_path = initial_path.clone();
+                        }
+                    }
+                    // Update the files list for the new current_path
+                    if let Some(parent_path) = Path::new(&current_path).canonicalize()?.parent() {
+                        current_path = parent_path.to_path_buf().to_string_lossy().into_owned();
+                    }
+                    files = list_directory_contents(&current_path);
+                    selected = 0; // Reset selection for the new directory listing
+                },                             
                 _ => {}
             },
             _ => {}
