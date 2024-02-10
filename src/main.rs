@@ -73,15 +73,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             .unwrap_or_else(|| "Directory".into())
                     });
 
-                let items: Vec<ListItem> = files
+                    let items: Vec<ListItem> = files
                     .iter()
                     .enumerate()
                     .map(|(i, file)| {
-                        // Trim the leading "./" from the path for display purposes.
-                        let trimmed_path = file.path.trim_start_matches("./");
-                        // Append a "/" to the path if it's a directory to distinguish them from files.
-                        let display_text = if file.is_dir { format!("{}/", trimmed_path) } else { trimmed_path.to_string() };
-
+                        // Extract just the file name or directory name for display, instead of the full path.
+                        let file_name = Path::new(&file.path)
+                            .file_name() // Extracts the last component of the path as a file name
+                            .unwrap_or_else(|| std::ffi::OsStr::new("Unknown")) // Fallback in case of an error
+                            .to_string_lossy(); // Converts the file name to a string
+                
+                        let display_text = if file.is_dir { format!("{}/", file_name) } else { file_name.into_owned() };
+                
                         // Create a Span from the adjusted display text.
                         let content = Spans::from(vec![Span::raw(display_text)]);
                         // Create a ListItem with the content, applying style based on selection or directory status.
@@ -94,6 +97,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         item
                     })
                     .collect();
+                
 
             let files_list =
                 List::new(items).block(Block::default().borders(Borders::ALL).title(current_dir_name));
