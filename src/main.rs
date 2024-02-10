@@ -82,6 +82,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .take(display_count)
                     .enumerate()
                     .map(|(i, file)| {
+                        // Adjust the index to be relative to the start of the displayed list
+                        let display_index = i + scroll;
                         // Extract just the file name or directory name for display, instead of the full path.
                         let file_name = Path::new(&file.path)
                             .file_name() // Extracts the last component of the path as a file name
@@ -94,7 +96,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         let content = Spans::from(vec![Span::raw(display_text)]);
                         // Create a ListItem with the content, applying style based on selection or directory status.
                         let mut item = ListItem::new(content);
-                        if i == selected {
+                        if display_index == selected {
                             item = item.style(Style::default().bg(Color::Blue))
                         } else if file.is_dir {
                             item = item.style(Style::default().fg(Color::Green))
@@ -117,8 +119,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 KeyCode::Down => {
                     if selected < files.len() - 1 {
                         selected += 1;
+                        // Ensure the selected item is always visible
                         if selected >= scroll + display_count {
-                            scroll += 1; // Scroll down when the selection moves beyond the current view
+                            scroll = selected - display_count + 1; // Adjust scroll to keep the selected item visible
                         }
                     }
                 },
