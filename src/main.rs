@@ -125,24 +125,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }
                 KeyCode::Backspace => {
-                    // Use Path and PathBuf to manipulate paths
-                    if let Some(parent_path) = Path::new(&current_path).parent() {
-                        // Check if the parent exists and is not the current directory itself to prevent infinite loops
-                        if parent_path != Path::new(&current_path) {
+                    // First, handle the result of canonicalize() to get the canonical path
+                    if let Ok(canonical_path) = Path::new(&current_path).canonicalize() {
+                        // Then, check if the parent of the canonical path exists
+                        if let Some(parent_path) = canonical_path.parent() {
                             // Convert the parent path to a String
-                            current_path = parent_path.to_path_buf().to_string_lossy().into_owned();
-                        } else {
-                            // TODO: Handle the scenario where you can't go up any further, maybe reset to initial_path or do nothing
-                            // current_path = initial_path.clone();
+                            current_path = parent_path.to_string_lossy().into_owned();
+                            // Refresh the directory listing based on the new current path
+                            files = list_directory_contents(&current_path);
+                            selected = 0; // Reset the selection index
                         }
                     }
-                    // Update the files list for the new current_path
-                    if let Some(parent_path) = Path::new(&current_path).canonicalize()?.parent() {
-                        current_path = parent_path.to_path_buf().to_string_lossy().into_owned();
-                    }
-                    files = list_directory_contents(&current_path);
-                    selected = 0; // Reset selection for the new directory listing
-                },                             
+                },                            
                 _ => {}
             },
             _ => {}
