@@ -51,6 +51,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut current_path = initial_path.clone();
     let mut files = list_directory_contents(path);
     let mut selected = 0;
+    let mut scroll: usize = 0; // Tracks the topmost item in the list view
+    let display_count = 20; // Example fixed value, adjust based on your UI layout
+
 
 
     loop {
@@ -75,6 +78,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                     let items: Vec<ListItem> = files
                     .iter()
+                    .skip(scroll)
+                    .take(display_count)
                     .enumerate()
                     .map(|(i, file)| {
                         // Extract just the file name or directory name for display, instead of the full path.
@@ -110,15 +115,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     break;
                 }
                 KeyCode::Down => {
-                    selected = (selected + 1) % files.len();
-                }
+                    if selected < files.len() - 1 {
+                        selected += 1;
+                        if selected >= scroll + display_count {
+                            scroll += 1; // Scroll down when the selection moves beyond the current view
+                        }
+                    }
+                },
                 KeyCode::Up => {
                     if selected > 0 {
                         selected -= 1;
-                    } else {
-                        selected = files.len() - 1; // Cycle to the last item
+                        if selected < scroll {
+                            scroll = selected; // Scroll up when the selection moves above the current view
+                        }
                     }
-                }
+                },                
                 KeyCode::Enter => {
                     if files[selected].is_dir {
                         // Logic to display contents of the selected directory
