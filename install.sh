@@ -2,7 +2,7 @@
 
 # Replace this URL with the actual URL of your Rusty Read binary release
 # REMEMBER TO UPDATE THE VERSION NUMBER IN THE URL
-DOWNLOAD_URL="https://github.com/charlesinwald/rusty_read/releases/download/1.0.1/rusty_read"
+DOWNLOAD_URL="https://github.com/charlesinwald/rusty_read/releases/download/1.0.2/rusty_read"
 
 INSTALL_DIR="$HOME/.local/bin"
 BIN_NAME="rusty_read"
