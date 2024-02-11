@@ -6,6 +6,7 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use std::io;
+use std::io::BufRead;
 use std::path::{Path, PathBuf};
 // `tui` is a library for building Text User Interfaces (TUIs)
 use tui::{
@@ -37,6 +38,23 @@ fn list_directory_contents(path: &str) -> Vec<FileSystemEntry> {
         })
         .collect()
 }
+
+fn read_file_preview(path: &str) -> String {
+    const MAX_LINES: usize = 20; // Limit the preview to 10 lines
+    let file = std::fs::File::open(path);
+    match file {
+        Ok(file) => {
+            let reader = std::io::BufReader::new(file);
+            let lines: Vec<_> = reader.lines()
+                                    .take(MAX_LINES)
+                                    .collect::<Result<_, _>>()
+                                    .unwrap_or_else(|_| vec!["Error reading file".to_string()]);
+            lines.join("\n")
+        }
+        Err(_) => "Cannot open file".to_string(),
+    }
+}
+
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     enable_raw_mode()?;
@@ -108,7 +126,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             let files_list =
                 List::new(items).block(Block::default().borders(Borders::ALL).title(current_dir_name));
+
+                let preview_content = if files[selected].is_dir {
+                    "Directory selected - no preview available".to_string()
+                } else {
+                    read_file_preview(&files[selected].path)
+                };
+            
+                let paragraph = tui::widgets::Paragraph::new(preview_content)
+                    .block(Block::default().borders(Borders::ALL).title("Preview"))
+                    .wrap(tui::widgets::Wrap { trim: true });
             f.render_widget(files_list, chunks[0]);
+            f.render_widget(paragraph, chunks[1]);
         })?;
 
         match event::read()? {
