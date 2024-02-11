@@ -18,7 +18,7 @@ This project is a command line file browser built in Rust, utilizing the `crosst
 Quickly install `rusty_read` by running the following command in your terminal:
 
 ```sh
-sudo curl -sSL https://raw.githubusercontent.com/charlesinwald/rusty_read/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/charlesinwald/rusty_read/main/install.sh | bash
 ```
 
 After installation, you might need to restart your terminal or source your shell configuration file:
