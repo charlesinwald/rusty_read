@@ -8,7 +8,8 @@ This project is a command line file browser built in Rust, utilizing the `crosst
 - Cross-platform support, thanks to `crossterm`.
 - Interactive TUI for browsing file system directories.
 - Supports keyboard navigation with arrow keys, enter to navigate into directories, and backspace to go up.
-- Highlights directories in green and marks the current selection with a blue background for clarity.
+- File Previews
+- File Info
 
 ## Installation
 
