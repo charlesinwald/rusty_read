@@ -195,6 +195,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         current_path = new_path.to_string_lossy().into_owned();
                         files = list_directory_contents(&current_path);
                         selected = 0; // Reset selection in the new directory
+                        scroll = 0; // Reset scroll in the new directory
                     }
                 },
                 KeyCode::Backspace => {
@@ -207,6 +208,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             // Refresh the directory listing based on the new current path
                             files = list_directory_contents(&current_path);
                             selected = 0; // Reset the selection index
+                            scroll = 0; // Reset the scroll index
                         }
                     }
                 },                            
