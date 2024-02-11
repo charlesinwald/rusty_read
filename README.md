@@ -3,7 +3,7 @@
 
 This project is a command line file browser built in Rust, utilizing the `crossterm` and `tui` libraries for cross-platform terminal handling and to build a text user interface (TUI), respectively. It's designed to offer a simple, intuitive interface for navigating and viewing the contents of your filesystem.
 
-![rusty_read screenshot](https://i.imgur.com/3iRHk3t.png)
+![rusty_read screenshot](https://i.imgur.com/5a2fU0F.png)
 
 ## Features
 
