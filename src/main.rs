@@ -190,14 +190,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 },                
                 KeyCode::Enter => {
-                    if files[selected].is_dir {
-                        // Logic to display contents of the selected directory
-                        let new_path = format!("{}/{}", current_path, files[selected].path.trim_start_matches("./"));
-                        current_path = new_path;
+                    if !files.is_empty() && files[selected].is_dir {
+                        let new_path = Path::new(&current_path).join(Path::new(&files[selected].path).strip_prefix("./").unwrap_or_else(|_| Path::new(&files[selected].path)));
+                        current_path = new_path.to_string_lossy().into_owned();
                         files = list_directory_contents(&current_path);
                         selected = 0; // Reset selection in the new directory
                     }
-                }
+                },
                 KeyCode::Backspace => {
                     // First, handle the result of canonicalize() to get the canonical path
                     if let Ok(canonical_path) = Path::new(&current_path).canonicalize() {
